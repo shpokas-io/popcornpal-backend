@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Controller,
   Get,
@@ -39,13 +38,13 @@ export class MoviesController {
   //Delete a movie by ID
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  deleteMovie(@Param('id') id: String) {
+  deleteMovie(@Param('id') id: string) {
     return this.moviesService.deleteMovie(id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get()
   getmovies() {
-    return this.moviesService.getMovies();
+    return this.moviesService.getAllMovies();
   }
 }
