@@ -22,16 +22,17 @@ export class MoviesController {
   constructor(private readonly moviesService: MoviesService) {}
 
   @Get()
-  getAllMovies() {
-    return this.moviesService.getAllMovies();
+  async getAllMovies(): Promise<any> {
+    const movies = await this.moviesService.getAllMovies();
+    return { message: 'Movies retrieved successfully', data: movies };
   }
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async createMovie(@Body() createMovieDto: CreateMovieDto) {
+  async createMovie(@Body() createMovieDto: CreateMovieDto): Promise<any> {
     try {
       const movie = await this.moviesService.createMovie(createMovieDto);
-      return { message: 'MOvie created successfully', data: movie };
+      return { message: 'Movie created successfully', data: movie };
     } catch {
       throw new HttpException('Failed to create movie', HttpStatus.BAD_REQUEST);
     }
@@ -42,13 +43,13 @@ export class MoviesController {
   async updateMovie(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateMovieDto: UpdateMovieDto,
-  ) {
+  ): Promise<any> {
     try {
       const updatedMovie = await this.moviesService.updateMovie(
         id,
         updateMovieDto,
       );
-      return { message: 'MOvie updated successfully', data: updatedMovie };
+      return { message: 'Movie updated successfully', data: updatedMovie };
     } catch {
       throw new HttpException('Failed to update movie', HttpStatus.NOT_FOUND);
     }
@@ -82,7 +83,7 @@ export class MoviesController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/favorites')
-  async getFavorites(@Req() req) {
+  async getFavorites(@Req() req): Promise<any> {
     try {
       const userId = req.user.userId;
       const favorites = await this.moviesService.getFavorites(userId);
