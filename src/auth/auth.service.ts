@@ -1,3 +1,4 @@
+// src/auth/auth.service.ts
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { JwtService } from '@nestjs/jwt';
@@ -9,10 +10,11 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly supabaseService: SupabaseService,
   ) {}
+
   async signUp(email: string, password: string) {
     const supabase = this.supabaseService.getClient();
 
-    //Check if the user already exists
+    // Check if the user already exists
     const { data: existingUser } = await supabase
       .from('users')
       .select('*')
@@ -23,10 +25,10 @@ export class AuthService {
       throw new HttpException('User already exists', HttpStatus.CONFLICT);
     }
 
-    //Hash the password
+    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    //insert the new user into the database
+    // Insert the new user into the database
     const { data, error } = await supabase
       .from('users')
       .insert([{ email, password: hashedPassword }])
@@ -50,9 +52,36 @@ export class AuthService {
   }
 
   async generateToken(user: any) {
-    const payload = { username: user.username, sub: user.userId };
+    const payload = { username: user.email, sub: user.id };
     return {
       access_token: this.jwtService.sign(payload),
     };
+  }
+
+  async signIn(email: string, password: string) {
+    const supabase = this.supabaseService.getClient();
+
+    // Retrieve the user by email
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
+
+    if (!user || error) {
+      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+    }
+
+    // Validate the password
+    const isPasswordValid = await this.validatePassword(
+      password,
+      user.password,
+    );
+    if (!isPasswordValid) {
+      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+    }
+
+    // Generate JWT token
+    return this.generateToken(user);
   }
 }

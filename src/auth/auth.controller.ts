@@ -14,33 +14,19 @@ export class AuthController {
 
   @Post('signup')
   async signUp(
-    @Body('username') username: string,
+    @Body('email') email: string,
     @Body('password') password: string,
   ) {
-    const hashedPassword = await this.authService.hashPassword(password);
-    //HERE IS USER WITH HASHEDPASSWORD
-    // const user = await this.userService.create({
-    //   username,
-    //   password: hashedPassword,
-    // });
-    return { message: 'User registered successfully' };
+    // Call the signUp method from AuthService
+    return this.authService.signUp(email, password);
   }
 
   @Post('login')
   async login(
-    @Body('username') username: string,
+    @Body('email') email: string,
     @Body('password') password: string,
   ) {
-    //HEre retvieve the user from database by userName
-    const user = { username: 'testuser', password: 'hashed_password_from_db' };
-
-    const isPasswordValid = await this.authService.validatePassword(
-      password,
-      user.password,
-    );
-    if (!isPasswordValid) {
-      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
-    }
-    return this.authService.generateToken(user);
+    // Call the signIn method from AuthService to handle login
+    return this.authService.signIn(email, password);
   }
 }
