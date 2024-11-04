@@ -7,6 +7,10 @@ import {
   Body,
   Param,
   UseGuards,
+  Req,
+  HttpException,
+  HttpStatus,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { MoviesService } from './movies.service';
@@ -24,41 +28,70 @@ export class MoviesController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  createMovie(@Body() createMovieDto: CreateMovieDto) {
-    return this.moviesService.createMovie(createMovieDto);
+  async createMovie(@Body() createMovieDto: CreateMovieDto) {
+    try {
+      const movie = await this.moviesService.createMovie(createMovieDto);
+      return { message: 'MOvie created successfully', data: movie };
+    } catch {
+      throw new HttpException('Failed to create movie', HttpStatus.BAD_REQUEST);
+    }
   }
 
-  //Update a movie by ID
   @UseGuards(JwtAuthGuard)
   @Put(':id')
-  updateMovie(@Param('id') id: string, @Body() updateMovieDto: UpdateMovieDto) {
-    return this.moviesService.updateMovie(id, updateMovieDto);
+  async updateMovie(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateMovieDto: UpdateMovieDto,
+  ) {
+    try {
+      const updatedMovie = await this.moviesService.updateMovie(
+        id,
+        updateMovieDto,
+      );
+      return { message: 'MOvie updated successfully', data: updatedMovie };
+    } catch {
+      throw new HttpException('Failed to update movie', HttpStatus.NOT_FOUND);
+    }
   }
 
-  //Delete a movie by ID
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  deleteMovie(@Param('id') id: string) {
-    return this.moviesService.deleteMovie(id);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get()
-  getmovies() {
-    return this.moviesService.getAllMovies();
+  async deleteMovie(@Param('id', ParseUUIDPipe) id: string) {
+    try {
+      await this.moviesService.deleteMovie(id);
+      return { message: 'Movie deleted successfully' };
+    } catch {
+      throw new HttpException('Failed to delete movie', HttpStatus.NOT_FOUND);
+    }
   }
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/favorite')
-  async addFavorite(@Param('id') movieId: string, @Req() req) {
-    const userId = req.user.userId;
-    return this.moviesService.addFavorite(userId, movieId);
+  async addFavorite(@Param('id', ParseUUIDPipe) movieId: string, @Req() req) {
+    try {
+      const userId = req.user.userId;
+      await this.moviesService.addFavorite(userId, movieId);
+      return { message: 'Movie added to favorites' };
+    } catch {
+      throw new HttpException(
+        'Failed to add to favorites',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('/favorites')
   async getFavorites(@Req() req) {
-    const userId = req.user.userId;
-    return this.moviesService.getFavorites(userId);
+    try {
+      const userId = req.user.userId;
+      const favorites = await this.moviesService.getFavorites(userId);
+      return { message: 'Favorites retrieved successfully', data: favorites };
+    } catch {
+      throw new HttpException(
+        'Failed to retrieve favorites',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 }
