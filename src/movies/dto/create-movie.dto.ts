@@ -16,7 +16,7 @@ export class CreateMovieDto {
   @IsString()
   genre?: string;
 
-  @IsOptional
+  @IsOptional()
   @IsNumber()
   rating?: number;
 }
