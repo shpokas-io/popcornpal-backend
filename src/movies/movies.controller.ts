@@ -1,5 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { MoviesService } from './movies.service';
 
@@ -8,7 +19,33 @@ export class MoviesController {
   constructor(private readonly moviesService: MoviesService) {}
 
   @Get()
-  async findAll() {
+  getAllMovies() {
+    return this.moviesService.getAllMovies();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post()
+  createMovie(@Body() createMovieDto: CreateMovieDto) {
+    return this.moviesService.createMovie(createMovieDto);
+  }
+
+  //Update a movie by ID
+  @UseGuards(JwtAuthGuard)
+  @Put(':id')
+  updateMovie(@Param('id') id: string, @Body() updateMovieDto: UpdateMovieDto) {
+    return this.moviesService.updateMovie(id, updateMovieDto);
+  }
+
+  //Delete a movie by ID
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  deleteMovie(@Param('id') id: String) {
+    return this.moviesService.deleteMovie(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  getmovies() {
     return this.moviesService.getMovies();
   }
 }
