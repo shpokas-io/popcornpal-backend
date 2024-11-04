@@ -47,4 +47,18 @@ export class MoviesController {
   getmovies() {
     return this.moviesService.getAllMovies();
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/favorite')
+  async addFavorite(@Param('id') movieId: string, @Req() req) {
+    const userId = req.user.userId;
+    return this.moviesService.addFavorite(userId, movieId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/favorites')
+  async getFavorites(@Req() req) {
+    const userId = req.user.userId;
+    return this.moviesService.getFavorites(userId);
+  }
 }
