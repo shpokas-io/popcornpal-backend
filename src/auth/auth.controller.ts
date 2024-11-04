@@ -17,7 +17,7 @@ export class AuthController {
   async signUp(@Body() signUpDto: SignUpDto) {
     try {
       return await this.authService.signUp(signUpDto.email, signUpDto.password);
-    } catch (error) {
+    } catch {
       throw new HttpException(
         'Failed to register user',
         HttpStatus.BAD_REQUEST,
@@ -29,7 +29,7 @@ export class AuthController {
   async login(@Body() loginDto: LoginDto) {
     try {
       return await this.authService.signIn(loginDto.email, loginDto.password);
-    } catch (error) {
+    } catch {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
   }
