@@ -7,5 +7,6 @@ import { SupabaseModule } from '../supabase/supabase.module';
   imports: [SupabaseModule],
   providers: [MoviesService],
   controllers: [MoviesController],
+  exports: [MoviesService],
 })
 export class MoviesModule {}

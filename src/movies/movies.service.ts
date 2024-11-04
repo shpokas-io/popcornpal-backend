@@ -3,13 +3,28 @@ import { SupabaseService } from '../supabase/supabase.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 
+interface Movie {
+  id: string;
+  title: string;
+  description: string;
+  release_date: string;
+  genre: string;
+  rating: number;
+}
+
+interface Favorite {
+  user_id: string;
+  movie_id: string;
+}
+
 @Injectable()
 export class MoviesService {
+  private readonly supabase = this.supabaseService.getClient();
+
   constructor(private readonly supabaseService: SupabaseService) {}
 
-  async getAllMovies() {
-    const supabase = this.supabaseService.getClient();
-    const { data, error } = await supabase.from('movies').select('*');
+  async getAllMovies(): Promise<Movie[]> {
+    const { data, error } = await this.supabase.from('movies').select('*');
 
     if (error) {
       throw new HttpException(
@@ -20,15 +35,8 @@ export class MoviesService {
     return data;
   }
 
-  async createMovie(createMovieDto: CreateMovieDto) {
-    const supabase = this.supabaseService.getClient();
-    if (createMovieDto.release_date) {
-      createMovieDto.release_date = new Date(
-        createMovieDto.release_date,
-      ).toISOString();
-    }
-
-    const { data, error } = await supabase
+  async createMovie(createMovieDto: CreateMovieDto): Promise<Movie> {
+    const { data, error } = await this.supabase
       .from('movies')
       .insert([createMovieDto])
       .single();
@@ -43,43 +51,36 @@ export class MoviesService {
   }
 
   async updateMovie(id: string, updateMovieDto: UpdateMovieDto) {
-    const supabase = this.supabaseService.getClient();
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from('movies')
       .update(updateMovieDto)
       .eq('id', id)
       .single();
 
     if (error) {
-      throw new HttpException(
-        'Failed to update movie',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Failed to update movie', HttpStatus.NOT_FOUND);
     }
     return data;
   }
 
-  async deleteMovie(id: string) {
-    const supabase = this.supabaseService.getClient();
-    const { data, error } = await supabase
+  async deleteMovie(id: string): Promise<{ message: string }> {
+    const { error } = await this.supabase
       .from('movies')
       .delete()
       .eq('id', id)
       .single();
 
     if (error) {
-      throw new HttpException(
-        'Failed to delete movie',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Failed to delete movie', HttpStatus.NOT_FOUND);
     }
-    return data;
+    return { message: 'Movie deleted successfully' };
   }
 
-  async addFavorite(userId: string, movieId: string) {
-    const supabase = this.supabaseService.getClient();
-
-    const { data: existingFavorite } = await supabase
+  async addFavorite(
+    userId: string,
+    movieId: string,
+  ): Promise<{ message: string }> {
+    const { data: existingFavorite } = await this.supabase
       .from('favorites')
       .select('*')
       .eq('user_id', userId)
@@ -92,7 +93,7 @@ export class MoviesService {
         HttpStatus.CONFLICT,
       );
     }
-    const { data, error } = await supabase
+    const { error } = await this.supabase
       .from('favorites')
       .insert({ user_id: userId, movie_id: movieId })
       .single();
@@ -103,12 +104,11 @@ export class MoviesService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    return { message: 'Movie added to favorites', data };
+    return { message: 'Movie added to favorites' };
   }
 
-  async getFavorites(userId: string) {
-    const supabase = this.supabaseService.getClient();
-    const { data, error } = await supabase
+  async getFavorites(userId: string): Promise<Movie[]> {
+    const { data, error } = await this.supabase
       .from('favorites')
       .select('movie_id, movies(*)')
       .eq('user_id', userId);
