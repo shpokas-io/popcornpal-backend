@@ -12,11 +12,6 @@ interface Movie {
   rating: number;
 }
 
-interface Favorite {
-  user_id: string;
-  movie_id: string;
-}
-
 @Injectable()
 export class MoviesService {
   private readonly supabase = this.supabaseService.getClient();
@@ -32,7 +27,7 @@ export class MoviesService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    return data;
+    return data as Movie[];
   }
 
   async createMovie(createMovieDto: CreateMovieDto): Promise<Movie> {
@@ -47,7 +42,7 @@ export class MoviesService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    return data;
+    return data as Movie;
   }
 
   async updateMovie(id: string, updateMovieDto: UpdateMovieDto) {
@@ -60,7 +55,7 @@ export class MoviesService {
     if (error) {
       throw new HttpException('Failed to update movie', HttpStatus.NOT_FOUND);
     }
-    return data;
+    return data as Movie;
   }
 
   async deleteMovie(id: string): Promise<{ message: string }> {
@@ -110,7 +105,7 @@ export class MoviesService {
   async getFavorites(userId: string): Promise<Movie[]> {
     const { data, error } = await this.supabase
       .from('favorites')
-      .select('movie_id, movies(*)')
+      .select('movies(*)')
       .eq('user_id', userId);
 
     if (error) {
@@ -119,6 +114,6 @@ export class MoviesService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    return data.map((favorites) => favorites.movies);
+    return data.map((favorite) => favorite.movies as unknown as Movie);
   }
 }
