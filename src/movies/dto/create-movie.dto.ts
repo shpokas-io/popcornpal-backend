@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsDate, IsNumber } from 'class-validator';
+import { IsString, IsOptional, IsDateString, IsNumber } from 'class-validator';
 
 export class CreateMovieDto {
   @IsString()
@@ -9,8 +9,8 @@ export class CreateMovieDto {
   description?: string;
 
   @IsOptional()
-  @IsDate()
-  release_date?: Date;
+  @IsDateString()
+  release_date?: string;
 
   @IsOptional()
   @IsString()

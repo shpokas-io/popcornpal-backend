@@ -22,6 +22,12 @@ export class MoviesService {
 
   async createMovie(createMovieDto: CreateMovieDto) {
     const supabase = this.supabaseService.getClient();
+    if (createMovieDto.release_date) {
+      createMovieDto.release_date = new Date(
+        createMovieDto.release_date,
+      ).toISOString();
+    }
+
     const { data, error } = await supabase
       .from('movies')
       .insert([createMovieDto])
