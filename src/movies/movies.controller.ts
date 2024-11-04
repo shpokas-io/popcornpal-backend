@@ -1,4 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { Controller, Get, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { MoviesService } from './movies.service';
 
 @Controller('movies')
