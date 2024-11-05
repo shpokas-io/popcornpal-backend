@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   UseGuards,
   Req,
   HttpException,
@@ -25,6 +26,22 @@ export class MoviesController {
   async getAllMovies(): Promise<any> {
     const movies = await this.moviesService.getAllMovies();
     return { message: 'Movies retrieved successfully', data: movies };
+  }
+
+  @Get('search')
+  async searchMovies(
+    @Query('title') title?: string,
+    @Query('genre') genre?: string,
+    @Query('release_year') releaseYear?: string,
+    @Query('description') description?: string,
+  ): Promise<any> {
+    const movies = await this.moviesService.searchMovies({
+      title,
+      genre,
+      releaseYear,
+      description,
+    });
+    return { message: 'Search results', data: movies };
   }
 
   @UseGuards(JwtAuthGuard)

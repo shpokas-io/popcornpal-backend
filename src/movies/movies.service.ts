@@ -30,6 +30,42 @@ export class MoviesService {
     return data as Movie[];
   }
 
+  async searchMovies({
+    title,
+    genre,
+    releaseYear,
+    description,
+  }: {
+    title?: string;
+    genre?: string;
+    releaseYear?: string;
+    description?: string;
+  }): Promise<Movie[]> {
+    let query = this.supabase.from('movies').select('*');
+
+    if (title) {
+      query = query.ilike('title', `%${title}%`);
+    }
+    if (genre) {
+      query = query.ilike('genre', `%${genre}%`);
+    }
+    if (releaseYear) {
+      query = query.ilike('releaseYear', `%${releaseYear}%`);
+    }
+    if (description) {
+      query = query.ilike('description', `%${description}%`);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      throw new HttpException(
+        'Failed to perform search',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return data as Movie[];
+  }
+
   async createMovie(createMovieDto: CreateMovieDto): Promise<Movie> {
     const { data, error } = await this.supabase
       .from('movies')
