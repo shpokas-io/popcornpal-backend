@@ -33,12 +33,12 @@ export class MoviesService {
   async searchMovies({
     title,
     genre,
-    releaseYear,
+    release_year,
     description,
   }: {
     title?: string;
     genre?: string;
-    releaseYear?: string;
+    release_year?: string;
     description?: string;
   }): Promise<Movie[]> {
     let query = this.supabase.from('movies').select('*');
@@ -49,8 +49,8 @@ export class MoviesService {
     if (genre) {
       query = query.ilike('genre', `%${genre}%`);
     }
-    if (releaseYear) {
-      query = query.ilike('releaseYear', `%${releaseYear}%`);
+    if (release_year) {
+      query = query.ilike('release_date', `${release_year}-%`);
     }
     if (description) {
       query = query.ilike('description', `%${description}%`);

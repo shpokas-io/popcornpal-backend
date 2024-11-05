@@ -32,13 +32,13 @@ export class MoviesController {
   async searchMovies(
     @Query('title') title?: string,
     @Query('genre') genre?: string,
-    @Query('release_year') releaseYear?: string,
+    @Query('release_year') release_year?: string,
     @Query('description') description?: string,
   ): Promise<any> {
     const movies = await this.moviesService.searchMovies({
       title,
       genre,
-      releaseYear,
+      release_year,
       description,
     });
     return { message: 'Search results', data: movies };
