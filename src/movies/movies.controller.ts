@@ -12,6 +12,7 @@ import {
   HttpException,
   HttpStatus,
   ParseUUIDPipe,
+  HttpCode,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { MoviesService } from './movies.service';
@@ -26,6 +27,13 @@ export class MoviesController {
   async getAllMovies(): Promise<any> {
     const movies = await this.moviesService.getAllMovies();
     return { message: 'Movies retrieved successfully', data: movies };
+  }
+
+  @Get('populate')
+  @HttpCode(HttpStatus.OK)
+  async populateMovies() {
+    await this.moviesService.populateMovies();
+    return { message: 'Movies population completed' };
   }
 
   @Get('search')

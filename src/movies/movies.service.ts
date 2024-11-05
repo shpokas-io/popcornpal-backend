@@ -10,6 +10,7 @@ interface Movie {
   release_date: string;
   genre: string;
   rating: number;
+  poster_url: string;
 }
 
 @Injectable()
@@ -17,6 +18,62 @@ export class MoviesService {
   private readonly supabase = this.supabaseService.getClient();
 
   constructor(private readonly supabaseService: SupabaseService) {}
+
+  async populateMovies() {
+    const omdbApiKey = process.env.OMDB_API_KEY;
+    const movieTitles = [
+      'Inception',
+      'Interstellar',
+      'The Dark Knight',
+      'Pulp Fiction',
+      'The Matrix',
+      'Fight Club',
+      'Forrest Gump',
+      'The Shawshank Redemption',
+      'The Godfather',
+      'The Lord of the Rings',
+      'The Social Network',
+      'Gladiator',
+      'Joker',
+      'Toy Story',
+      'Shrek',
+      'Titanic',
+      'Star Wars',
+      'The Lion King',
+      'Back to the Future',
+      'The Silence of the Lambs',
+    ];
+
+    for (const title of movieTitles) {
+      try {
+        const response = await fetch(
+          `http://www.omdbapi.com/?t=${encodeURIComponent(title)}&apikey=${omdbApiKey}`,
+        );
+        const movieData = await response.json();
+
+        if (movieData.Response === 'False') {
+          console.warn(`Movie not found: ${title}`);
+          continue;
+        }
+
+        const movie = {
+          title: movieData.Title,
+          description: movieData.Plot,
+          release_date: movieData.Released,
+          genre: movieData.Genre,
+          rating: parseFloat(movieData.imdbRating) || 0,
+          poster_url: movieData.Poster,
+        };
+
+        const { error } = await this.supabase.from('movies').insert([movie]);
+        if (error) {
+          console.error(`Failed to insert movie ${title}:`, error);
+        }
+      } catch (error) {
+        console.error(`Error fetching movie ${title}:`, error);
+      }
+    }
+  }
 
   async getAllMovies(): Promise<Movie[]> {
     const { data, error } = await this.supabase.from('movies').select('*');
