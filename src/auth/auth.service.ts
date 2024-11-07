@@ -12,76 +12,76 @@ export class AuthService {
   ) {}
 
   async signUp(email: string, password: string) {
-    const supabase = this.supabaseService.getClient();
+    await this.ensureUserDoesNotExist(email);
+    const hashedPassword = await this.hashPassword(password);
+    const user = await this.createUserInDatabase(email, hashedPassword);
 
-    // Check if the user already exists
-    const { data: existingUser } = await supabase
+    return { message: 'User registered successfully', user };
+  }
+
+  async signIn(email: string, password: string) {
+    const user = await this.findUserByEmail(email);
+
+    await this.verifyPassword(password, user.password);
+
+    return this.generateToken(user);
+  }
+
+  private async ensureUserDoesNotExist(email: string): Promise<void> {
+    const { data: existingUser } = await this.supabaseService
+      .getClient()
       .from('users')
       .select('*')
       .eq('email', email)
       .single();
-
     if (existingUser) {
       throw new HttpException('User already exists', HttpStatus.CONFLICT);
     }
+  }
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Insert the new user into the database
-    const { data, error } = await supabase
+  private async createUserInDatabase(email: string, password: string) {
+    const { data, error } = await this.supabaseService
+      .getClient()
       .from('users')
-      .insert([{ email, password: hashedPassword }])
+      .insert([{ email, password }])
       .single();
-
     if (error) {
       throw new HttpException(
         'Error creating user',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    return { message: 'User registered successfully', user: data };
+    return data; // Return the created user data
   }
 
-  async hashPassword(password: string): Promise<string> {
-    return bcrypt.hash(password, 10);
-  }
-
-  async validatePassword(password: string, hash: string): Promise<boolean> {
-    return bcrypt.compare(password, hash);
-  }
-
-  async generateToken(user: any) {
-    const payload = { username: user.email, sub: user.id };
-    return {
-      access_token: this.jwtService.sign(payload),
-    };
-  }
-
-  async signIn(email: string, password: string) {
-    const supabase = this.supabaseService.getClient();
-
-    // Retrieve the user by email
-    const { data: user, error } = await supabase
+  private async findUserByEmail(email: string) {
+    const { data: user, error } = await this.supabaseService
+      .getClient()
       .from('users')
       .select('*')
       .eq('email', email)
       .single();
-
     if (!user || error) {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
+    return user;
+  }
 
-    // Validate the password
-    const isPasswordValid = await this.validatePassword(
-      password,
-      user.password,
-    );
+  private async verifyPassword(password: string, hash: string): Promise<void> {
+    const isPasswordValid = await bcrypt.compare(password, hash);
     if (!isPasswordValid) {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
+  }
 
-    // Generate JWT token
-    return this.generateToken(user);
+  private async hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, 10);
+  }
+
+  private generateToken(user: any) {
+    const payload = { username: user.email, sub: user.id };
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
   }
 }
