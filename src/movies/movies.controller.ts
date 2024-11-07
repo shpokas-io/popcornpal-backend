@@ -12,7 +12,6 @@ import {
   HttpException,
   HttpStatus,
   ParseUUIDPipe,
-  HttpCode,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { MoviesService } from './movies.service';
@@ -27,13 +26,6 @@ export class MoviesController {
   async getAllMovies(): Promise<any> {
     const movies = await this.moviesService.getAllMovies();
     return { message: 'Movies retrieved successfully', data: movies };
-  }
-
-  @Get('populate')
-  @HttpCode(HttpStatus.OK)
-  async populateMovies() {
-    await this.moviesService.populateMovies();
-    return { message: 'Movies population completed' };
   }
 
   @Get('search')
@@ -102,6 +94,24 @@ export class MoviesController {
       throw new HttpException(
         'Failed to add to favorites',
         HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id/favorite')
+  async removeFavorite(
+    @Param('id', ParseUUIDPipe) movieId: string,
+    @Req() req,
+  ) {
+    try {
+      const userId = req.user.userId;
+      await this.moviesService.removeFavorite(userId, movieId);
+      return { message: 'Movie removed from favorites' };
+    } catch {
+      throw new HttpException(
+        'Failed to remove from favorites',
+        HttpStatus.NOT_FOUND,
       );
     }
   }
