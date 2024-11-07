@@ -110,13 +110,29 @@ export class MoviesService {
   }
 
   async removeFavorite(userId: string, movieId: string): Promise<void> {
-    const favorite = await this.favoriteRepository.findOne({
-      where: { userId, movieId },
-    });
-    if (!favorite) {
-      throw new Error('Favorite not found');
+    const { data: favorite, error } = await this.supabase
+      .from('favorites')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('movie_id', movieId)
+      .single();
+
+    if (!favorite || error) {
+      throw new HttpException('Favorite not found', HttpStatus.NOT_FOUND);
     }
-    await this.favoriteRepository.remove(favorite);
+
+    const { error: deleteError } = await this.supabase
+      .from('favorites')
+      .delete()
+      .eq('user_id', userId)
+      .eq('movie_id', movieId);
+
+    if (deleteError) {
+      throw new HttpException(
+        'Failed to delete favorite',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async addFavorite(
