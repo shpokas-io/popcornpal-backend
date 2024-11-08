@@ -51,7 +51,7 @@ export class AuthService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    return data; // Return the created user data
+    return data;
   }
 
   private async findUserByEmail(email: string) {
