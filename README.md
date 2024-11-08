@@ -1,6 +1,6 @@
 <!-- PROJECT LOGO -->
 <p align="center">
-  <img src="../frontend/src/assets/images/logo-nobc.png" width="200px" />
+  <img src="./src/assets/logo-nobc.png" width="200px" />
 </p>
 <br>
 <h3 align="center"> PopcornPal </h3>
@@ -69,10 +69,8 @@ This backend project is built as part of the [PopcornPal](https://github.com/shp
    `git clone https://github.com/shpokas-io/popcornpal-backend`
 2. Navigate to backend directory:<br>
    `cd PopcornPal/backend`
-3. Restore dependencies:<br>
-   `dotnet restore`
 
-4. Create .env file
+3. Create .env file
 
 - PORT=3000
 - DATABASE_URL=<your-mongodb-url>
@@ -81,7 +79,7 @@ This backend project is built as part of the [PopcornPal](https://github.com/shp
 - SUPABASE_KEY=<your-supabase-key>
 
 4. Build and run the application:<br>
-   `dotnet run`
+   `npm run start`
 
 ## Contact
 
